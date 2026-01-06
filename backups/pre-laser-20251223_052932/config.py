@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # Safety Bypass for Testing (DANGER: Only use for mock laser testing!)
     # Set to True to disable Photon Handshake safety checks
     # WARNING: NEVER enable this with a real laser - safety interlocks MUST be active
-    BYPASS_PHOTON_HANDSHAKE: bool = True  # Set to True to test laser controls without PX4
+    BYPASS_PHOTON_HANDSHAKE: bool = False  # Set to True to test laser controls without PX4
     
     # # Security
     # ENABLE_AUTH: bool = False

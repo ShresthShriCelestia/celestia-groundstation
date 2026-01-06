@@ -1,0 +1,28 @@
+# FastAPI and Server
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# Data Validation
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Authentication & Security
+PyJWT==2.8.0
+bcrypt==4.2.0
+
+# Database
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+
+# WebSocket & HTTP
+python-multipart==0.0.6
+websockets==12.0
+
+# System Monitoring
+psutil==6.1.0
+
+# Data Processing
+numpy==1.26.4
+
+# Email validation
+email-validator==2.1.0

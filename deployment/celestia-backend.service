@@ -5,11 +5,11 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=ce
-Group=ce
-WorkingDirectory=/home/ce/celestia-groundstation
-Environment="PATH=/home/ce/celestia-groundstation/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=/home/ce/celestia-groundstation/backend/venv/bin/python -m backend.main
+User=CE
+Group=CE
+WorkingDirectory=/home/CE/celestia-groundstation
+Environment="PATH=/home/CE/celestia-groundstation/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/CE/celestia-groundstation/venv/bin/python -m backend.main
 Restart=always
 RestartSec=10
 StandardOutput=journal

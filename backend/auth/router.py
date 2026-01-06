@@ -89,7 +89,11 @@ def signup(req: SignupRequest, device=Depends(require_device_pairing)):
         db.add(u); db.commit()
         
         # attach requested role if valid; default VIEWER
-        r = db.query(Role).filter_by(code=(req.role or "VIEWER")).first()
+        # Prevent ADMIN role selection during signup
+        requested_role = req.role or "VIEWER"
+        if requested_role not in ["VIEWER", "DEVELOPER"]:
+            requested_role = "VIEWER"  # Force to VIEWER if invalid role
+        r = db.query(Role).filter_by(code=requested_role).first()
         if not r: r = db.query(Role).filter_by(code="VIEWER").first()
         db.add(UserRole(user_id=u.id, role_id=r.id)); db.commit()
         

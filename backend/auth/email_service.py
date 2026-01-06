@@ -23,10 +23,11 @@ except ImportError:
 
 class EmailService:
     def __init__(self):
+        from backend.config import settings
         self.admin_email = os.getenv("ADMIN_EMAIL", "shresth@celestiaenergy.com")
-        self.from_email = os.getenv("SENDGRID_FROM_EMAIL", "shresth@celestiaenergy.com")
+        self.from_email = settings.SENDGRID_FROM_EMAIL
         self.from_name = os.getenv("SENDGRID_FROM_NAME", "Terra Station")
-        self.sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+        self.sendgrid_api_key = settings.SENDGRID_API_KEY
 
         # Store for pending approval tokens
         self.approval_tokens = {}  # Initialize empty dict first to prevent errors!
@@ -129,7 +130,7 @@ class EmailService:
             logger.error(f"❌ Failed to send email via SendGrid: {e}")
             return False
 
-    def send_signup_approval_email(self, user_email: str, user_id: str, base_url: str = "https://gs-989c28cd.celestiaenergy.com"):
+    def send_signup_approval_email(self, user_email: str, user_id: str, base_url: str = "https://groundstation.celestiaenergy.com"):
         """Send approval email to admin"""
         try:
             # Generate secure approval tokens

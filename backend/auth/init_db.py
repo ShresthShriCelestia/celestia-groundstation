@@ -13,12 +13,12 @@ def init_db():
                 db.add(Role(code=code, description=desc))
         db.commit()
         # ensure one admin
-        email = "admin@example.com"
+        email = "shresth@celestiaenergy.com"
         pwd = "admin123"
         u = db.query(User).filter_by(email=email).first()
         if not u:
             password_hash = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            u = User(email=email, password_hash=password_hash)
+            u = User(email=email, password_hash=password_hash, is_approved=True)
             db.add(u); db.commit()
         r = db.query(Role).filter_by(code="ADMIN").first()
         if not db.query(UserRole).filter_by(user_id=u.id, role_id=r.id).first():

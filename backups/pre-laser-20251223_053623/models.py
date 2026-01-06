@@ -164,92 +164,34 @@ class SessionInfo(BaseModel):
     samples_logged: int
     csv_path: Optional[str]
 
+
 # ==============================================================================
 # LASER CONTROL MODELS
 # ==============================================================================
 
 class LaserStatusFlags(BaseModel):
-    """
-    Status flags decoded from 32-bit laser status word.
-    Based on IPG Photonics YLR-U3 specification.
-    """
-    # === ALARMS (Red indicators) ===
-    cmd_buffer_overflow: bool = False        # Bit 0
-    alarm_overheat: bool = False             # Bit 1
-    alarm_back_reflection: bool = False      # Bit 3
-    pulse_too_long: bool = False             # Bit 5
-    pulse_too_short: bool = False            # Bit 9
-    high_pulse_energy: bool = False          # Bit 17
-    power_supply_failure: bool = False       # Bit 19
-    duty_cycle_too_high: bool = False        # Bit 23
-    alarm_temp_low: bool = False             # Bit 24
-    power_supply_alarm: bool = False         # Bit 25
-    guide_laser_alarm: bool = False          # Bit 28
-    alarm_critical: bool = False             # Bit 29
-    fiber_interlock: bool = False            # Bit 30
-    high_average_power: bool = False         # Bit 31
-
-    # === STATUS INDICATORS (Green indicators) ===
-    emission_on: bool = False                # Bit 2
-    ext_power_control: bool = False          # Bit 4
-    guide_laser_on: bool = False             # Bit 8
-    pulse_mode: bool = False                 # Bit 10
-    power_supply_on: bool = False            # Bit 11
-    modulation_mode: bool = False            # Bit 12
-    gate_mode: bool = False                  # Bit 16
-    ext_emission_control: bool = False       # Bit 18
-    waveform_mode: bool = False              # Bit 22
-    ext_guide_control: bool = False          # Bit 27
-
-    # === WARNINGS (Yellow indicators) ===
-    humidity_too_high: bool = False          # Bit 7
+    """Status flags decoded from laser status word."""
+    emission_on: bool = False
+    guide_laser_on: bool = False
+    power_supply_on: bool = False
+    modulation_mode: bool = False
+    ext_control_active: bool = False
+    alarm_critical: bool = False
+    alarm_overheat: bool = False
+    alarm_back_reflection: bool = False
+    alarm_temp_low: bool = False
+    alarm_fiber_break: bool = False
+    warning_temp_low: bool = False
 
 
 class LaserStatusResponse(BaseModel):
-    """GET /laser/status response with complete telemetry."""
-    # Connection
-    connected: bool = False
-    error: Optional[str] = None
-
-    # Power Monitoring
-    avg_power_w: float = 0.0                 # Average output power (W)
-    peak_power_w: float = 0.0                # Peak output power (W)
-
-    # Temperature Monitoring
-    case_temperature_c: float = 0.0          # Case temperature (°C)
-    board_temperature_c: float = 0.0         # Board temperature (°C)
-
-    # Control
-    setpoint_pct: float = 0.0                # Current power setpoint (%)
-
-    # Status Word (32-bit decoded flags)
+    """GET /laser/status response."""
+    connection_status: Literal["Connected", "Disconnected", "Connecting"]
+    output_power_watts: float = 0.0
+    temperature_c: float = 0.0
+    setpoint_percent: float = 0.0
     status_flags: LaserStatusFlags
-    status_word: int = 0                     # Raw 32-bit status value (for debugging)
-
-    # Device Information
-    device_id: str = "Unknown"               # Device ID (e.g., YLR-2000-U3-WC)
-    firmware_revision: str = "Unknown"       # Firmware version
-
-    # Legacy field aliases (for backward compatibility)
-    @property
-    def output_power_watts(self) -> float:
-        """Alias for avg_power_w"""
-        return self.avg_power_w
-
-    @property
-    def temperature_c(self) -> float:
-        """Alias for case_temperature_c"""
-        return self.case_temperature_c
-
-    @property
-    def setpoint_percent(self) -> float:
-        """Alias for setpoint_pct"""
-        return self.setpoint_pct
-
-    @property
-    def connection_status(self) -> str:
-        """Alias for connected status"""
-        return "Connected" if self.connected else "Disconnected"
+    error: Optional[str] = None
 
 
 class LaserEnableRequest(BaseModel):
@@ -261,6 +203,7 @@ class LaserEnableRequest(BaseModel):
 class LaserSetpointRequest(BaseModel):
     """POST /laser/setpoint request."""
     setpoint_percent: float = Field(ge=0.0, le=100.0, description="Laser power setpoint (%)")
+
 
 # ==============================================================================
 # PX4 / SCENARIO MODELS
