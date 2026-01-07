@@ -9,7 +9,7 @@ Provides REST API for:
 - Safety interlocks and health monitoring
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from backend.models import (
     LaserStatusResponse,
     LaserEnableRequest,
@@ -20,9 +20,12 @@ from backend.config import settings
 from backend.auth.dep import require_roles
 import sys
 import os
+import time
+from collections import defaultdict
+from typing import Dict, Tuple
 
 # Add Laser directory to path to import laser_decoder
-sys.path.insert(0, str(settings.PROJECT_ROOT.parent / "Laser"))
+sys.path.insert(0, str(settings.PROJECT_ROOT / "Laser"))
 
 try:
     from laser_decoder import LaserStatusDecoder
@@ -82,6 +85,7 @@ async def get_laser_status():
             error=telemetry.get("error"),
             avg_power_w=telemetry.get("avg_power_w", 0.0),
             peak_power_w=telemetry.get("peak_power_w", 0.0),
+            commanded_w=telemetry.get("commanded_w", 0.0),
             case_temperature_c=telemetry.get("case_temperature_c", 0.0),
             board_temperature_c=telemetry.get("board_temperature_c", 0.0),
             setpoint_pct=telemetry.get("setpoint_pct", 0.0),
@@ -97,6 +101,7 @@ async def get_laser_status():
         return LaserStatusResponse(
             connected=False,
             error=str(e),
+            commanded_w=0.0,
             status_flags=LaserStatusFlags()
         )
 
@@ -128,7 +133,7 @@ async def enable_laser(
         # Check connection
         telemetry = decoder.get_laser_telemetry()
 
-        if telemetry.get("connection_status") != "Connected":
+        if not telemetry.get("connected"):
             raise HTTPException(
                 status_code=503,
                 detail="Cannot control laser: not connected"
@@ -218,7 +223,7 @@ async def set_laser_setpoint(
 
         # Check connection
         telemetry = decoder.get_laser_telemetry()
-        if telemetry.get("connection_status") != "Connected":
+        if not telemetry.get("connected"):
             raise HTTPException(
                 status_code=503,
                 detail="Cannot set setpoint: laser not connected"
@@ -260,20 +265,20 @@ async def laser_health_check():
         decoder = get_laser_decoder()
         telemetry = decoder.get_laser_telemetry()
 
-        connected = telemetry.get("connection_status") == "Connected"
+        connected = telemetry.get("connected")
         flags = telemetry.get("status_flags", {})
         has_alarms = any([
             flags.get("alarm_critical", False),
             flags.get("alarm_overheat", False),
             flags.get("alarm_back_reflection", False),
-            flags.get("alarm_fiber_break", False),
+            flags.get("fiber_interlock", False),
         ])
 
         return {
             "connected": connected,
             "healthy": connected and not has_alarms,
             "emission_on": flags.get("emission_on", False),
-            "power_watts": telemetry.get("output_power_watts", 0.0),
+            "power_watts": telemetry.get("avg_power_w", 0.0),
             "alarms_active": has_alarms
         }
     except Exception as e:

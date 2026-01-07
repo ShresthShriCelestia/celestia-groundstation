@@ -13,9 +13,8 @@ class LaserStatusDecoder:
         self._socket: Optional[socket.socket] = None
         self._last_command_time = 0.0
         self._connection_timeout = 30.0  # Close connection after 30s idle
-
+    
     def _load_config(self, config_path: str) -> dict:
-        """Load configuration."""
         try:
             with open(config_path, 'r') as f:
                 return json.load(f)
@@ -57,7 +56,7 @@ class LaserStatusDecoder:
     def __del__(self):
         """Cleanup on destruction."""
         self._close_connection()
-
+    
     def send_command(self, sock, cmd):
         try:
             sock.sendall(f"{cmd}\r".encode('ascii'))
@@ -68,47 +67,36 @@ class LaserStatusDecoder:
         except Exception as e:
             print(f"Comms Error: {e}")
             return None
-
+        
     def decode_status_word(self, status_int):
-        """
-        Decode the 32-bit STA status integer into UI-ready flags.
-        Based on IPG Photonics YLR-U3 specification.
-        """
         return {
-            # === STATUS INDICATORS (Bits 0-31) ===
-
-            # Alarms (Red indicators)
-            "cmd_buffer_overflow": bool((status_int >> 0) & 1),      # Bit 0
-            "alarm_overheat": bool((status_int >> 1) & 1),           # Bit 1
-            "alarm_back_reflection": bool((status_int >> 3) & 1),    # Bit 3
-            "pulse_too_long": bool((status_int >> 5) & 1),           # Bit 5
-            "pulse_too_short": bool((status_int >> 9) & 1),          # Bit 9 (yellow)
-            "high_pulse_energy": bool((status_int >> 17) & 1),       # Bit 17
-            "power_supply_failure": bool((status_int >> 19) & 1),    # Bit 19
-            "duty_cycle_too_high": bool((status_int >> 23) & 1),     # Bit 23
-            "alarm_temp_low": bool((status_int >> 24) & 1),          # Bit 24
-            "power_supply_alarm": bool((status_int >> 25) & 1),      # Bit 25
-            "guide_laser_alarm": bool((status_int >> 28) & 1),       # Bit 28
-            "alarm_critical": bool((status_int >> 29) & 1),          # Bit 29
-            "fiber_interlock": bool((status_int >> 30) & 1),         # Bit 30
-            "high_average_power": bool((status_int >> 31) & 1),      # Bit 31
-
-            # Status Indicators (Green/Gray indicators)
-            "emission_on": bool((status_int >> 2) & 1),              # Bit 2
-            "ext_power_control": bool((status_int >> 4) & 1),        # Bit 4
-            "guide_laser_on": bool((status_int >> 8) & 1),           # Bit 8
-            "pulse_mode": bool((status_int >> 10) & 1),              # Bit 10
-            "power_supply_on": bool((status_int >> 11) & 1),         # Bit 11
-            "modulation_mode": bool((status_int >> 12) & 1),         # Bit 12
-            "gate_mode": bool((status_int >> 16) & 1),               # Bit 16
-            "ext_emission_control": bool((status_int >> 18) & 1),    # Bit 18
-            "waveform_mode": bool((status_int >> 22) & 1),           # Bit 22
-            "ext_guide_control": bool((status_int >> 27) & 1),       # Bit 27
-
-            # Warnings (Yellow indicators)
-            "humidity_too_high": bool((status_int >> 7) & 1),        # Bit 7
+            "cmd_buffer_overflow": bool((status_int >> 0) & 1),
+            "alarm_overheat": bool((status_int >> 1) & 1),
+            "alarm_back_reflection": bool((status_int >> 3) & 1),
+            "pulse_too_long": bool((status_int >> 5) & 1),
+            "pulse_too_short": bool((status_int >> 9) & 1),
+            "high_pulse_energy": bool((status_int >> 17) & 1),
+            "power_supply_failure": bool((status_int >> 19) & 1),
+            "duty_cycle_too_high": bool((status_int >> 23) & 1),
+            "alarm_temp_low": bool((status_int >> 24) & 1),
+            "power_supply_alarm": bool((status_int >> 25) & 1),
+            "guide_laser_alarm": bool((status_int >> 28) & 1),
+            "alarm_critical": bool((status_int >> 29) & 1),
+            "fiber_interlock": bool((status_int >> 30) & 1),
+            "high_average_power": bool((status_int >> 31) & 1),
+            "emission_on": bool((status_int >> 2) & 1),
+            "ext_power_control": bool((status_int >> 4) & 1),
+            "guide_laser_on": bool((status_int >> 8) & 1),
+            "pulse_mode": bool((status_int >> 10) & 1),
+            "power_supply_on": bool((status_int >> 11) & 1),
+            "modulation_mode": bool((status_int >> 12) & 1),
+            "gate_mode": bool((status_int >> 16) & 1),
+            "ext_emission_control": bool((status_int >> 18) & 1),
+            "waveform_mode": bool((status_int >> 22) & 1),
+            "ext_guide_control": bool((status_int >> 27) & 1),
+            "humidity_too_high": bool((status_int >> 7) & 1),
         }
-
+    
     def get_laser_telemetry(self):
         """Returns full JSON-ready dictionary for the frontend."""
         data = {}
@@ -117,11 +105,11 @@ class LaserStatusDecoder:
             # Use persistent connection
             s = self._get_connection()
 
-            # Average Output Power (ch1) in Watts
+            # Average Output Power in Watts
             avg_pwr_resp = self.send_command(s, "ROP")
             data['avg_power_w'] = 0.0 if avg_pwr_resp == "OFF" else float(avg_pwr_resp)
 
-            # Peak Power (ch1) in Watts
+            # Peak Power in Watts
             try:
                 peak_pwr_resp = self.send_command(s, "RPP")
                 data['peak_power_w'] = 0.0 if peak_pwr_resp == "OFF" else float(peak_pwr_resp)
@@ -160,13 +148,10 @@ class LaserStatusDecoder:
                 data['status_flags'] = {}
                 data['status_word'] = 0
 
-            # Firmware Info
+            # Device Info
             try:
-                device_id_resp = self.send_command(s, "RID")
-                data['device_id'] = device_id_resp if device_id_resp else "Unknown"
-
-                revision_resp = self.send_command(s, "RFV")
-                data['firmware_revision'] = revision_resp if revision_resp else "Unknown"
+                data["device_id"] = self.send_command(s, "RID") or "Unknown"
+                data["firmware_revision"] = self.send_command(s, "RFV") or "Unknown"
             except Exception:
                 data['device_id'] = "Unknown"
                 data['firmware_revision'] = "Unknown"
@@ -198,7 +183,7 @@ class LaserStatusDecoder:
         try:
             s = self._get_connection()
             response = self.send_command(s, "EMON")
-            if response and "OK" in response:
+            if response and "OK" in response.upper():
                 return {"success": True, "message": "Laser emission enabled"}
             elif response and "ERROR_PS_OFF" in response:
                 return {"success": False, "message": "Cannot enable: Power supply is off"}
@@ -215,7 +200,7 @@ class LaserStatusDecoder:
         try:
             s = self._get_connection()
             response = self.send_command(s, "EMOFF")
-            if response and "OK" in response:
+            if response and "OK" in response.upper():
                 return {"success": True, "message": "Laser emission disabled"}
             else:
                 return {"success": False, "message": f"Disable failed: {response}"}
@@ -230,7 +215,7 @@ class LaserStatusDecoder:
         try:
             s = self._get_connection()
             response = self.send_command(s, f"SCS {percent}")
-            if response and "OK" in response:
+            if response and "OK" in response.upper():
                 return {"success": True, "message": f"Setpoint set to {percent}%", "setpoint": percent}
             elif response and "ERROR_RANGE" in response:
                 return {"success": False, "message": "Setpoint out of range (0-100%)", "setpoint": 0}

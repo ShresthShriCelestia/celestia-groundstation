@@ -453,6 +453,7 @@ async def websocket_telemetry(websocket: WebSocket):
                     "connected": telemetry.get("laser_connected", False),
                     "avg_power_w": telemetry.get("laser_avg_power_w", 0.0),
                     "peak_power_w": telemetry.get("laser_peak_power_w", 0.0),
+                    "commanded_w": telemetry.get("laser_commanded_w", 0.0),
                     "case_temperature_c": telemetry.get("laser_case_temperature_c", 0.0),
                     "board_temperature_c": telemetry.get("laser_board_temperature_c", 0.0),
                     "setpoint_pct": telemetry.get("laser_setpoint_pct", 0.0),

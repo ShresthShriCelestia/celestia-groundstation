@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     # Laser Configuration
     LASER_IP: str = "127.0.0.1"  # Use localhost for mock laser (change to 192.168.3.230 for real hardware)
     LASER_PORT: int = 10001
-    LASER_CONFIG_PATH: Path = PROJECT_ROOT.parent / "Laser" / "laser_config.json"
+    LASER_CONFIG_PATH: Path = PROJECT_ROOT / "laser_config.json"
 
     # Safety Bypass for Testing (DANGER: Only use for mock laser testing!)
     # Set to True to disable Photon Handshake safety checks
@@ -95,7 +95,7 @@ class Settings(BaseSettings):
 
     # Pydantic v2 configuration
     model_config = SettingsConfigDict(
-        env_file="/home/CE/celestia-groundstation/.env",
+        env_file="/home/ce/celestia-groundstation/.env",
         case_sensitive=True,
         extra="allow"
     )

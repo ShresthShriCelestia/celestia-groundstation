@@ -29,6 +29,7 @@ class MockLaser:
         self.setpoint = 50.0 
         self.device_id = "MOCK-UV-LASER-01"
         self.fw_rev = "v2.4.1"
+        self.commanded_w = 0.0
 
     def _load_config(self, config_path: str) -> dict:
         try:
@@ -88,7 +89,10 @@ class MockLaser:
             response = f"STA:{self.calculate_status_word()}\r"
         elif cmd == "RID": # Device ID
             response = f"RID:{self.device_id}\r"
-        elif cmd == "RFV": # Firmware Version
+        elif cmd == "RFV":
+            response = f"RFV:{self.fw_rev}\r"
+        elif cmd == "RCW":
+            response = f"RCW:{self.commanded_w:.1f}\r"
             response = f"RFV:{self.fw_rev}\r"
 
         # Handle Write Commands

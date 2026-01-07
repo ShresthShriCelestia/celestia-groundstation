@@ -258,4 +258,4 @@ class PairingManager:
 
 
 # Singleton instance
-pairing_manager = PairingManager("/home/CE/celestia-groundstation/data/paired_devices.json")
+pairing_manager = PairingManager("/home/ce/celestia-groundstation/data/paired_devices.json")

@@ -95,7 +95,7 @@ class Settings(BaseSettings):
 
     # Pydantic v2 configuration
     model_config = SettingsConfigDict(
-        env_file="/home/CE/celestia-groundstation/.env",
+        env_file="/home/ce/celestia-groundstation/.env",
         case_sensitive=True,
         extra="allow"
     )

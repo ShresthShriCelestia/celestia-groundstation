@@ -26,3 +26,5 @@ numpy==1.26.4
 
 # Email validation
 email-validator==2.1.0
+qrcode==7.4.2
+pyotp==2.9.0

@@ -214,6 +214,7 @@ class LaserStatusResponse(BaseModel):
     # Power Monitoring
     avg_power_w: float = 0.0                 # Average output power (W)
     peak_power_w: float = 0.0                # Peak output power (W)
+    commanded_w: float = 0.0                 # Commanded angular velocity or power (W)
 
     # Temperature Monitoring
     case_temperature_c: float = 0.0          # Case temperature (°C)
